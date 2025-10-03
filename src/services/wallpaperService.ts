@@ -1,0 +1,277 @@
+import { supabase } from '../lib/supabase';
+import { Wallpaper } from '../types';
+
+export class WallpaperService {
+  // Obtener todos los wallpapers (sin usuario autenticado)
+  static async getAllWallpapers(): Promise<Wallpaper[]> {
+    const { data, error } = await supabase
+      .from('wallpapers')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    return data.map(wallpaper => ({
+      ...wallpaper,
+      isLiked: false
+    }));
+  }
+
+  // Obtener wallpapers con estado de like del usuario
+  static async getWallpapersForUser(userId: string): Promise<Wallpaper[]> {
+    // Obtener wallpapers básicos
+    const { data: wallpapers, error: wallpapersError } = await supabase
+      .from('wallpapers')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (wallpapersError) throw wallpapersError;
+
+    // Obtener likes del usuario para todos los wallpapers
+    const { data: userLikes, error: likesError } = await supabase
+      .from('user_likes')
+      .select('wallpaper_id')
+      .eq('user_id', userId);
+
+    if (likesError) throw likesError;
+
+    // Crear un Set para búsqueda rápida de wallpapers con like
+    const likedWallpaperIds = new Set(userLikes.map(like => like.wallpaper_id));
+
+    // Combinar datos
+    return wallpapers.map(wallpaper => ({
+      ...wallpaper,
+      isLiked: likedWallpaperIds.has(wallpaper.id)
+    }));
+  }
+
+  // Dar like a un wallpaper
+  static async likeWallpaper(userId: string, wallpaperId: string) {
+    // Verificar si ya existe el like
+    const { data: existingLike } = await supabase
+      .from('user_likes')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('wallpaper_id', wallpaperId)
+      .single();
+
+    if (existingLike) {
+      return; // Ya tiene like
+    }
+
+    // Insertar like
+    const { error: insertError } = await supabase
+      .from('user_likes')
+      .insert({ user_id: userId, wallpaper_id: wallpaperId });
+
+    if (insertError) throw insertError;
+
+    // Incrementar contador en wallpapers usando RPC
+    const { error: updateError } = await supabase.rpc('increment_likes', { 
+      wallpaper_id: wallpaperId 
+    });
+
+    if (updateError) {
+      // Si falla el RPC, incrementar manualmente
+      await supabase
+        .from('wallpapers')
+        .update({ 
+          likes: supabase.raw('likes + 1'),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', wallpaperId);
+    }
+  }
+
+  // Quitar like de un wallpaper
+  static async unlikeWallpaper(userId: string, wallpaperId: string) {
+    const { error: deleteError } = await supabase
+      .from('user_likes')
+      .delete()
+      .eq('user_id', userId)
+      .eq('wallpaper_id', wallpaperId);
+
+    if (deleteError) throw deleteError;
+
+    // Decrementar contador usando RPC
+    const { error: updateError } = await supabase.rpc('decrement_likes', { 
+      wallpaper_id: wallpaperId 
+    });
+
+    if (updateError) {
+      // Si falla el RPC, decrementar manualmente
+      await supabase
+        .from('wallpapers')
+        .update({ 
+          likes: supabase.raw('GREATEST(likes - 1, 0)'),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', wallpaperId);
+    }
+  }
+
+  // Registrar descarga
+  static async recordDownload(userId: string, wallpaperId: string) {
+    const { error: insertError } = await supabase
+      .from('user_downloads')
+      .insert({ user_id: userId, wallpaper_id: wallpaperId });
+
+    if (insertError) throw insertError;
+
+    // Incrementar contador de descargas usando RPC
+    const { error: updateError } = await supabase.rpc('increment_downloads', { 
+      wallpaper_id: wallpaperId 
+    });
+
+    if (updateError) {
+      // Si falla el RPC, incrementar manualmente
+      await supabase
+        .from('wallpapers')
+        .update({ 
+          downloads: supabase.raw('downloads + 1'),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', wallpaperId);
+    }
+  }
+
+  // Obtener wallpapers por categoría
+  static async getWallpapersByCategory(category: string, userId?: string): Promise<Wallpaper[]> {
+    const { data: wallpapers, error } = await supabase
+      .from('wallpapers')
+      .select('*')
+      .eq('category', category)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    if (!userId) {
+      return wallpapers.map(w => ({ ...w, isLiked: false }));
+    }
+
+    // Obtener likes del usuario para esta categoría
+    const wallpaperIds = wallpapers.map(w => w.id);
+    const { data: userLikes } = await supabase
+      .from('user_likes')
+      .select('wallpaper_id')
+      .eq('user_id', userId)
+      .in('wallpaper_id', wallpaperIds);
+
+    const likedIds = new Set(userLikes?.map(like => like.wallpaper_id) || []);
+
+    return wallpapers.map(wallpaper => ({
+      ...wallpaper,
+      isLiked: likedIds.has(wallpaper.id)
+    }));
+  }
+
+  // Buscar wallpapers
+  static async searchWallpapers(query: string, userId?: string): Promise<Wallpaper[]> {
+    const { data: wallpapers, error } = await supabase
+      .from('wallpapers')
+      .select('*')
+      .or(`title.ilike.%${query}%,category.ilike.%${query}%`)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    if (!userId) {
+      return wallpapers.map(w => ({ ...w, isLiked: false }));
+    }
+
+    // Obtener likes del usuario para los resultados de búsqueda
+    const wallpaperIds = wallpapers.map(w => w.id);
+    if (wallpaperIds.length === 0) return [];
+
+    const { data: userLikes } = await supabase
+      .from('user_likes')
+      .select('wallpaper_id')
+      .eq('user_id', userId)
+      .in('wallpaper_id', wallpaperIds);
+
+    const likedIds = new Set(userLikes?.map(like => like.wallpaper_id) || []);
+
+    return wallpapers.map(wallpaper => ({
+      ...wallpaper,
+      isLiked: likedIds.has(wallpaper.id)
+    }));
+  }
+
+  // Obtener estadísticas generales
+  static async getStats() {
+    try {
+      const [
+        { count: wallpaperCount },
+        { count: downloadCount },
+        { count: likeCount }
+      ] = await Promise.all([
+        supabase.from('wallpapers').select('*', { count: 'exact', head: true }),
+        supabase.from('user_downloads').select('*', { count: 'exact', head: true }),
+        supabase.from('user_likes').select('*', { count: 'exact', head: true })
+      ]);
+
+      return {
+        totalWallpapers: wallpaperCount || 0,
+        totalDownloads: downloadCount || 0,
+        totalLikes: likeCount || 0
+      };
+    } catch (error) {
+      console.error('Error getting stats:', error);
+      return {
+        totalWallpapers: 0,
+        totalDownloads: 0,
+        totalLikes: 0
+      };
+    }
+  }
+
+  // Obtener wallpapers más populares
+  static async getPopularWallpapers(limit: number = 10, userId?: string): Promise<Wallpaper[]> {
+    const { data: wallpapers, error } = await supabase
+      .from('wallpapers')
+      .select('*')
+      .order('likes', { ascending: false })
+      .order('downloads', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+
+    if (!userId) {
+      return wallpapers.map(w => ({ ...w, isLiked: false }));
+    }
+
+    // Obtener likes del usuario
+    const wallpaperIds = wallpapers.map(w => w.id);
+    const { data: userLikes } = await supabase
+      .from('user_likes')
+      .select('wallpaper_id')
+      .eq('user_id', userId)
+      .in('wallpaper_id', wallpaperIds);
+
+    const likedIds = new Set(userLikes?.map(like => like.wallpaper_id) || []);
+
+    return wallpapers.map(wallpaper => ({
+      ...wallpaper,
+      isLiked: likedIds.has(wallpaper.id)
+    }));
+  }
+
+  // Obtener wallpapers favoritos del usuario
+  static async getUserFavorites(userId: string): Promise<Wallpaper[]> {
+    const { data, error } = await supabase
+      .from('user_likes')
+      .select(`
+        wallpaper_id,
+        wallpapers (*)
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    return data.map((item: any) => ({
+      ...item.wallpapers,
+      isLiked: true
+    }));
+  }
+}
