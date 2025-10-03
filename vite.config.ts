@@ -38,21 +38,34 @@ function copyPublicFolder() {
   };
 }
 
-export default defineConfig({
-  plugins: [
-    react(),
-    copyPublicFolder()
-  ],
+// Load environment variables
+import { loadEnv } from 'vite';
+
+export default defineConfig(({ mode }) => {
+  // Load env file based on `mode` in the current working directory
+  const env = loadEnv(mode, process.cwd(), '');
   
-  base: '/',
+  return {
+    plugins: [
+      react(),
+      copyPublicFolder()
+    ],
+    
+    // Ensure environment variables are available in the client
+    define: {
+      'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
+    },
   
-  build: {
-    outDir: 'dist',
-    emptyOutDir: true,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
+    base: '/',
+    
+    build: {
+      outDir: 'dist',
+      emptyOutDir: true,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ['react', 'react-dom', 'react-router-dom'],
+          },
         },
       },
     },
@@ -63,7 +76,7 @@ export default defineConfig({
   },
   
   server: {
-    port: 3000,
+{{ ... }}
     open: true,
   },
 });
