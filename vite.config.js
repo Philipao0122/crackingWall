@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 import { readdirSync, copyFileSync, existsSync, mkdirSync } from 'fs';
@@ -38,9 +38,6 @@ function copyPublicFolder() {
   };
 }
 
-// Load environment variables
-import { loadEnv } from 'vite';
-
 export default defineConfig(({ mode }) => {
   // Load env file based on `mode` in the current working directory
   const env = loadEnv(mode, process.cwd(), '');
@@ -51,11 +48,12 @@ export default defineConfig(({ mode }) => {
       copyPublicFolder()
     ],
     
-    // Ensure environment variables are available in the client
+    // Environment variables
     define: {
       'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
+      'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY)
     },
-  
+    
     base: '/',
     
     build: {
@@ -69,14 +67,14 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-  },
-  
-  optimizeDeps: {
-    exclude: ['lucide-react'],
-  },
-  
-  server: {
-{{ ... }}
-    open: true,
-  },
+    
+    optimizeDeps: {
+      exclude: ['lucide-react']
+    } as const,
+    
+    server: {
+      port: 3000,
+      open: true,
+    },
+  };
 });
