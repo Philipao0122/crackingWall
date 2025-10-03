@@ -1,2 +1,17 @@
 # Handle client-side routing
-/*  /index.html  200
+/*    /index.html   200
+
+# Exclude static files from SPA routing
+/assets/*
+/favicon.ico
+/*.js
+/*.css
+/*.json
+/*.png
+/*.jpg
+/*.jpeg
+/*.svg
+/*.woff
+/*.woff2
+/*.ttf
+/*.eot
