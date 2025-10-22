@@ -69,7 +69,7 @@ export const WallpaperModal: React.FC<WallpaperModalProps> = ({
                   </h3>
                   <div className="space-y-2 font-brutal font-bold text-brutal-black">
                     <div>CATEGORÍA: {wallpaper.category}</div>
-                    <div>RESOLUCIÓN: {wallpaper.resolution}</div>
+                  
                     <div>LIKES: {wallpaper.likes.toLocaleString()}</div>
                     <div>DESCARGAS: {wallpaper.downloads.toLocaleString()}</div>
                   </div>

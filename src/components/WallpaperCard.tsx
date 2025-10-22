@@ -22,7 +22,7 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -4, x: -4 }}
-      className="bg-brutal-white border-4 border-brutal-black shadow-brutal cursor-pointer group"
+      className="bg-brutal-white border-4 border-brutal-black shadow-brutal group relative"
     >
       <div className="relative overflow-hidden">
         <img
@@ -39,10 +39,14 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={(e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 onView(wallpaper);
               }}
-              className="p-3 bg-brutal-white border-3 border-brutal-black shadow-brutal-sm hover:bg-brutal-yellow transition-colors"
+              onMouseDown={(e) => e.stopPropagation()}
+              aria-label={`Ver imagen completa de ${wallpaper.title}`}
+              title={`Ver ${wallpaper.title} en tamaño completo`}
+              className="p-3 bg-brutal-white border-3 border-brutal-black shadow-brutal-sm hover:bg-brutal-yellow transition-colors cursor-pointer"
             >
               <Eye className="w-5 h-5 text-brutal-black" />
             </motion.button>
@@ -54,6 +58,8 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
                 e.stopPropagation();
                 onLike(wallpaper.id);
               }}
+              aria-label={wallpaper.isLiked ? `Quitar me gusta de ${wallpaper.title}` : `Dar me gusta a ${wallpaper.title}`}
+              title={wallpaper.isLiked ? 'Quitar me gusta' : 'Dar me gusta'}
               className={`p-3 border-3 border-brutal-black shadow-brutal-sm transition-colors ${
                 wallpaper.isLiked 
                   ? 'bg-brutal-pink text-brutal-black' 
@@ -67,10 +73,14 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={(e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 onDownload(wallpaper.id);
               }}
-              className="p-3 bg-brutal-lime border-3 border-brutal-black shadow-brutal-sm hover:bg-brutal-cyan transition-colors"
+              onMouseDown={(e) => e.stopPropagation()}
+              aria-label={`Descargar imagen: ${wallpaper.title} (${wallpaper.width}×${wallpaper.height})`}
+              title={`Descargar ${wallpaper.title}`}
+              className="p-3 bg-brutal-white border-3 border-brutal-black shadow-brutal-sm hover:bg-brutal-yellow transition-colors cursor-pointer"
             >
               <Download className="w-5 h-5 text-brutal-black" />
             </motion.button>
@@ -89,7 +99,7 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
             {wallpaper.category}
           </span>
           <span className="text-sm font-brutal font-bold text-brutal-black">
-            {wallpaper.resolution}
+            {wallpaper.width}×{wallpaper.height}
           </span>
         </div>
         

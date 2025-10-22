@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset 
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+                    http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd
+                    http://www.google.com/schemas/sitemap-image/1.1
+                    http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd">
+
+  <!-- Página de inicio -->
+  <url>
+    <loc>https://crakingculturewallpaperr.xyz/</loc>
+    <lastmod>2025-10-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Página de wallpapers -->
+  <url>
+    <loc>https://crakingculturewallpaperr.xyz/wallpapers</loc>
+    <lastmod>2025-10-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Ejemplo de página de categoría -->
+  <url>
+    <loc>https://crakingculturewallpaperr.xyz/wallpapers?category=cyberpunk</loc>
+    <lastmod>2025-10-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Ejemplo de wallpaper individual -->
+  <url>
+    <loc>https://crakingculturewallpaperr.xyz/wallpaper/ejemplo-cyberpunk</loc>
+    <lastmod>2025-10-22</lastmod>
+    <image:image>
+      <image:loc>https://tu-bucket-supabase.supabase.co/storage/v1/object/public/wallpapers/cyberpunk-wallpaper.jpg</image:loc>
+      <image:title>Cyberpunk City Wallpaper</image:title>
+      <image:caption>Cyberpunk city neon lights wallpaper - Descarga gratis</image:caption>
+      <image:license>https://creativecommons.org/licenses/by/4.0/</image:license>
+    </image:image>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Añade más URLs siguiendo el mismo patrón -->
+
+</urlset>

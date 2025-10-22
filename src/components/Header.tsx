@@ -25,14 +25,14 @@ export const Header: React.FC<HeaderProps> = ({ onSearchChange, onAuthClick }) =
   };
 
   return (
-    <header className="bg-brutal-white border-b-6 border-brutal-black relative z-50">
+    <header className="bg-brutal-dark-deeper border-b-[5px] border-brutal-neon-cyan shadow-neon-cyan relative z-50">
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <motion.h1 
             initial={{ y: -20 }}
             animate={{ y: 0 }}
-            className="text-4xl md:text-6xl font-brutal font-black text-brutal-black"
+            className="text-4xl md:text-6xl font-brutal font-black text-white drop-shadow-[3px_3px_0_#00fff9] animate-glitch"
           >
             WALLPAPERS
           </motion.h1>
@@ -46,16 +46,16 @@ export const Header: React.FC<HeaderProps> = ({ onSearchChange, onAuthClick }) =
                 placeholder="BUSCAR WALLPAPERS..."
                 value={searchQuery}
                 onChange={handleSearchChange}
-                className="w-80 px-4 py-3 text-lg font-brutal font-bold bg-brutal-yellow border-4 border-brutal-black shadow-brutal focus:outline-none focus:shadow-brutal-lg placeholder-brutal-black"
+                className="w-80 px-4 py-3 text-lg font-brutal font-bold bg-brutal-dark-bg text-brutal-neon-yellow border-4 border-brutal-neon-yellow shadow-neon-cyan hover:shadow-neon-cyan-hover focus:outline-none placeholder-brutal-neon-yellow/70 transition-all"
               />
-              <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-brutal-black" />
+              <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-brutal-neon-yellow" />
             </div>
 
             {/* Auth Button */}
             {user ? (
               <div className="flex items-center space-x-2">
-                <div className="px-4 py-2 bg-brutal-lime border-4 border-brutal-black shadow-brutal">
-                  <span className="font-brutal font-bold text-brutal-black uppercase text-sm">
+                <div className="px-4 py-2 bg-brutal-neon-green text-brutal-dark-deeper border-4 border-brutal-dark-deeper shadow-neon-green">
+                  <span className="font-brutal font-bold uppercase text-sm">
                     {user.email}
                   </span>
                 </div>

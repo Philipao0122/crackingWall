@@ -45,9 +45,67 @@ export class WallpaperService {
     }));
   }
 
-  // Dar like a un wallpaper
+  // Update wallpaper like status
+  static async updateWallpaperLike(wallpaperId: string, isLiked: boolean, userId: string): Promise<void> {
+    try {
+      if (isLiked) {
+        // Add like
+        const { error } = await supabase
+          .from('user_likes')
+          .insert([{ user_id: userId, wallpaper_id: wallpaperId }]);
+        
+        if (error) throw error;
+        
+        // Increment like count
+        const { error: updateError } = await supabase
+          .from('wallpapers')
+          .update({ likes: supabase.rpc('increment') })
+          .eq('id', wallpaperId);
+          
+        if (updateError) throw updateError;
+      } else {
+        // Remove like
+        const { error } = await supabase
+          .from('user_likes')
+          .delete()
+          .eq('user_id', userId)
+          .eq('wallpaper_id', wallpaperId);
+        
+        if (error) throw error;
+        
+        // Decrement like count
+        const { error: updateError } = await supabase
+          .from('wallpapers')
+          .update({ likes: supabase.rpc('decrement') })
+          .eq('id', wallpaperId)
+          .gt('likes', 0);
+          
+        if (updateError) throw updateError;
+      }
+    } catch (error) {
+      console.error('Error updating wallpaper like:', error);
+      throw error;
+    }
+  }
+
+  // Increment wallpaper downloads
+  static async incrementWallpaperDownloads(wallpaperId: string): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('wallpapers')
+        .update({ downloads: supabase.rpc('increment') })
+        .eq('id', wallpaperId);
+        
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error incrementing downloads:', error);
+      throw error;
+    }
+  }
+
+  // Like a wallpaper
   static async likeWallpaper(userId: string, wallpaperId: string) {
-    // Verificar si ya existe el like
+    // Check if like already exists
     const { data: existingLike } = await supabase
       .from('user_likes')
       .select('id')
@@ -73,13 +131,21 @@ export class WallpaperService {
 
     if (updateError) {
       // Si falla el RPC, incrementar manualmente
-      await supabase
+      const { data: currentWallpaper } = await supabase
         .from('wallpapers')
-        .update({ 
-          likes: supabase.raw('likes + 1'),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', wallpaperId);
+        .select('likes')
+        .eq('id', wallpaperId)
+        .single();
+        
+      if (currentWallpaper) {
+        await supabase
+          .from('wallpapers')
+          .update({ 
+            likes: (currentWallpaper.likes || 0) + 1,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', wallpaperId);
+      }
     }
   }
 
@@ -100,13 +166,21 @@ export class WallpaperService {
 
     if (updateError) {
       // Si falla el RPC, decrementar manualmente
-      await supabase
+      const { data: currentWallpaper } = await supabase
         .from('wallpapers')
-        .update({ 
-          likes: supabase.raw('GREATEST(likes - 1, 0)'),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', wallpaperId);
+        .select('likes')
+        .eq('id', wallpaperId)
+        .single();
+        
+      if (currentWallpaper) {
+        await supabase
+          .from('wallpapers')
+          .update({ 
+            likes: Math.max((currentWallpaper.likes || 0) - 1, 0),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', wallpaperId);
+      }
     }
   }
 

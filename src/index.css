@@ -1,3 +1,56 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Scanlines effect CRT */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15),
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+  z-index: 9999;
+  animation: scanline 8s linear infinite;
+}
+
+@keyframes scanline {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(10px); }
+}
+
+/* Glitch text effect */
+.glitch-text {
+  position: relative;
+  display: inline-block;
+}
+
+.glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 2px;
+  top: 0;
+  color: #00fff9;
+  opacity: 0;
+  animation: glitch-overlay 5s infinite;
+}
+
+@keyframes glitch-overlay {
+  0%, 96%, 100% { opacity: 0; }
+  97% { 
+    opacity: 0.8;
+    transform: translate(-3px, 3px);
+  }
+  98% { 
+    opacity: 0.6;
+    transform: translate(3px, -3px);
+  }
+}
