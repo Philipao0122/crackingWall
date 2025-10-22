@@ -7,9 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "generate-sitemap": "npx tsx src/utils/sitemapGenerator.ts",
-    "postbuild": "npm run generate-sitemap"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@faker-js/faker": "^10.1.0",
