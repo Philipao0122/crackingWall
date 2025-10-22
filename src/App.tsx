@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
+
 
 import { Wallpaper } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
