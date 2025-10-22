@@ -1,12 +1,13 @@
 [build]
-  command = "npm install && npm run build"
+  command = "npm ci && npm run build"
   publish = "dist"
   base = "/"
+  ignore = "git diff --quiet HEAD^ HEAD ./"
 
 [build.environment]
-  NODE_VERSION = "18"
+  NODE_VERSION = "22"
   CI = "true"
-  NPM_FLAGS = "--no-optional"
+  NPM_FLAGS = "--prefer-offline --no-audit"
 
 [dev]
   command = "vite"
