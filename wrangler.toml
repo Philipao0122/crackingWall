@@ -5,4 +5,5 @@ compatibility_date = "2025-10-03"
 directory = "./dist"
 
 [build]
-command = "npm run build"
+command = "npm ci && npm run build"
+watch_dir = "src"
